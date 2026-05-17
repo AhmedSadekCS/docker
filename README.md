@@ -759,6 +759,45 @@ This lifecycle means that images are the immutable blueprints and containers are
 
 ---
 
+## Docker Registry
+
+A Docker registry is a service that stores Docker images so they can be shared between hosts. Docker Hub is the default public registry, but private registries also exist.
+
+```mermaid
+flowchart LR
+  Host["Local Host"]
+  Hub["Docker Hub"]
+  Host -->|push| Hub
+  Hub -->|pull| Host
+  Hub --> Public["Public image"]
+  Hub --> Private["Private image"]
+```
+
+* `docker push [USERNAME/REPO:TAG]` uploads a tagged image to the registry.
+* `docker pull [USERNAME/REPO:TAG]` downloads an image from the registry to the local host.
+
+Public images are accessible to anyone, while private images require authentication and are only accessible to authorized users.
+
+### Docker Registry Demo Flow
+
+```mermaid
+flowchart LR
+  Hub["Docker Hub"]
+  Image["Image"]
+  Container["Container"]
+  NewImage["New Image"]
+
+  Hub -->|pull| Image
+  Image -->|create a new container| Container
+  Container -->|make some changes| Container
+  Container -->|commit| NewImage
+  NewImage -->|push to Docker Hub| Hub
+```
+
+This flow shows the full cycle from Docker Hub to a container and then back to Docker Hub after a `commit`.
+
+---
+
 ## 2. Image Management Commands
 
 Images are the "blueprints" for your containers. Docker uses a "local-first" logic: whenever you request an image, Docker checks the Host first. If it isn't found locally, it retrieves it from the Registry.
@@ -803,6 +842,30 @@ Flags modify the behavior of the `docker run` command to suit different workload
 * `-d`: Detached mode. Runs the container in the background so your terminal remains free.
 * `--name`: Assigns a custom name to a container (e.g., `--name my-web-server`) instead of a random ID.
 * `--rm`: Automatic removal. This is perfect for transient workloads, such as running a one-off Python script or a temporary Ubuntu shell, as it deletes the container the moment it stops.
+
+**Example:**
+
+```bash
+docker run -it -d ubuntu
+```
+
+Meaning of each part:
+
+* `docker run` - launches a new container from an image.
+* `-i` - keeps STDIN open for interactive use. Important when you want to enter the container or use a shell.
+* `-t` - allocates a pseudo-TTY, so you get a normal terminal interface and can type commands.
+* `-d` - runs the container in detached mode, so it runs in the background and returns the container ID.
+
+So:
+
+* `-it` is useful when you want to interact with the container like a terminal session.
+* `-d` is useful when you want it to keep running in the background.
+
+Together:
+
+`docker run -it -d ubuntu`
+
+This starts an Ubuntu container in the background, but it is still prepared to accept a terminal session later.
 
 ### Entering an Existing Container
 
