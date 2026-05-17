@@ -697,6 +697,68 @@ The Docker architecture follows a client-server model. Understanding how these t
 
 ---
 
+## Docker Image and Container Lifecycle
+
+```mermaid
+flowchart LR
+  style A fill:#f8f9fa,stroke:#444,stroke-width:1px
+  style B fill:#d4e6f1,stroke:#444,stroke-width:1px
+  style C fill:#d4e6f1,stroke:#444,stroke-width:1px
+  style D fill:#f0f0f0,stroke:#444,stroke-width:1px
+
+  A["Docker File"]
+  B["Docker Image"]
+  C["Containers"]
+  D["Local Host"]
+  E["Docker Hub"]
+
+  A ---|build| B
+  B ---|tag| B
+  B ---|run| C
+  C ---|commit| B
+  B ---|push| E
+  E ---|pull| B
+  C -.->|stop/start/restart| D
+```
+
+This diagram shows the Docker image lifecycle exactly like the screenshot:
+
+* The `Docker File` is the starting point.
+* `build` creates a `Docker Image`.
+* `tag` labels the image before pushing or running.
+* `run` creates and starts a `Container` from the image.
+* `commit` saves the current container filesystem into a new image.
+* `push` sends a tagged image to Docker Hub.
+* `pull` downloads a remote image from Docker Hub back to the local host.
+* `stop/start/restart` are container lifecycle actions on the local host.
+
+The exact sequence from the right-hand diagram is:
+
+1. `Docker File` → `build` → `Docker Image`
+2. `Docker Image` → `tag` → `Docker Image`
+3. `Docker Image` → `run` → `Containers`
+4. Make changes inside the running container.
+5. `Containers` → `commit` → `Docker Image`
+6. `Containers` → `stop/start/restart` → `Local Host`
+
+1. Dockerfile: A text file that describes the image build steps.
+   * Example:
+     ```dockerfile
+     FROM ubuntu
+     RUN apt-get update
+     CMD ["echo", "Hello from Docker"]
+     ```
+2. Build: `docker build -t [NAME] .` reads the Dockerfile and creates a new Docker image.
+3. Tag: `docker tag [LOCAL_IMAGE] [USERNAME/REPO:TAG]` assigns a friendly alias to the image.
+4. Run: `docker run [IMAGE]` creates a container from the image and starts it.
+5. Commit: `docker commit [CONTAINER_ID] [NEW_IMAGE_NAME]` creates a fresh image from the current state of the container, including any changes you made inside it.
+
+**Commit clarity:** `docker commit` is used after modifying a running or stopped container. It captures the container's current filesystem and stores that exact snapshot as a new image. This is useful for quick experiments, but for repeatable workflows, it is usually better to encode changes in a Dockerfile.
+
+This lifecycle means that images are the immutable blueprints and containers are the live running instances. You can stop, start, or restart containers without changing the original image, and you can capture container changes with `docker commit` when needed.
+
+---
+
 ## 2. Image Management Commands
 
 Images are the "blueprints" for your containers. Docker uses a "local-first" logic: whenever you request an image, Docker checks the Host first. If it isn't found locally, it retrieves it from the Registry.
