@@ -24,6 +24,7 @@ COPY . .
 # Essentially, the container is saying: "I will listen for requests on port 4200"
 # In Angular, this is typically the port used by: the development server (ng serve) to serve the application. By exposing this port, you can access the Angular application from your host machine or other containers that are linked to this one.
 # To actually open it, you must use the `-p` flag at runtime: `docker run -p 4200:4200 <image-name>` which maps port 4200 of the container to port 4200 on your host machine, allowing you to access the application via `http://localhost:4200`.
+# 4200: container port
 EXPOSE 4200
 
 # This is the command that will be executed when the container starts up.
